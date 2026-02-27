@@ -1,0 +1,380 @@
+.reports-page {
+  padding: 25px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.reports-page.dark {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+}
+
+.reports-page.light {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.reports-page .section-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.reports-page.dark .section-title {
+  color: #e0e0e0;
+}
+
+.reports-page.light .section-title {
+  color: #1a1a1a;
+}
+
+.reports-subtitle {
+  font-size: 14px;
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.reports-page.dark .reports-subtitle {
+  color: #a0a0a0;
+}
+
+.reports-page.light .reports-subtitle {
+  color: #666;
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.report-card {
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.reports-page.dark .report-card {
+  background-color: #242424;
+  border: 1px solid #2a2a2a;
+}
+
+.reports-page.light .report-card {
+  background-color: #fafafa;
+  border: 1px solid #e0e0e0;
+}
+
+.report-icon {
+  font-size: 28px;
+  color: #667eea;
+  margin-bottom: 8px;
+}
+
+.report-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.reports-page.dark .report-value {
+  color: #e0e0e0;
+}
+
+.reports-page.light .report-value {
+  color: #1a1a1a;
+}
+
+.report-label {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.reports-page.dark .report-label {
+  color: #a0a0a0;
+}
+
+.reports-page.light .report-label {
+  color: #666;
+}
+
+.reports-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.segmented-control {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid #d0d0d0;
+  overflow: hidden;
+}
+
+.segmented-control button {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.segmented-control button.active {
+  background: #667eea;
+  color: #fff;
+}
+
+.reports-page.dark .segmented-control {
+  border-color: #2a2a2a;
+}
+
+.report-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.reports-page.dark .report-section h3 {
+  color: #e0e0e0;
+}
+
+.reports-page.light .report-section h3 {
+  color: #1a1a1a;
+}
+
+.status-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+
+.reports-page.dark .status-bar {
+  background-color: #242424;
+  color: #e0e0e0;
+}
+
+.reports-page.light .status-bar {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+}
+
+.status-bar .count {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.priority-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.badge {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge.high {
+  background-color: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+}
+
+.badge.medium {
+  background-color: rgba(251, 191, 36, 0.2);
+  color: #f59e0b;
+}
+
+.badge.low {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.chart {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.reports-page.dark .chart {
+  background-color: #242424;
+  border: 1px solid #2a2a2a;
+}
+
+.reports-page.light .chart {
+  background-color: #fafafa;
+  border: 1px solid #e0e0e0;
+}
+
+.chart-bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 10px;
+  align-items: end;
+  height: 180px;
+}
+
+.chart-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.bar-fill {
+  width: 100%;
+  max-width: 42px;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, #667eea, #764ba2);
+  min-height: 6px;
+  transition: height 0.3s ease;
+}
+
+.bar-fill.secondary {
+  background: linear-gradient(180deg, #10b981, #059669);
+}
+
+.bar-label {
+  margin-top: 6px;
+  font-size: 10px;
+  text-align: center;
+  opacity: 0.7;
+}
+
+.productivity-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.productivity-card {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+.reports-page.dark .productivity-card {
+  border-color: #2a2a2a;
+  background-color: #242424;
+}
+
+.reports-page.light .productivity-card {
+  background-color: #fafafa;
+}
+
+.metric-label {
+  font-size: 12px;
+  opacity: 0.7;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.metric-value.up {
+  color: #10b981;
+}
+
+.metric-value.down {
+  color: #ef4444;
+}
+
+.project-performance {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-row {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reports-page.dark .project-row {
+  border-color: #2a2a2a;
+  background-color: #242424;
+}
+
+.reports-page.light .project-row {
+  background-color: #fafafa;
+}
+
+.project-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.project-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.project-metric {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.project-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+}
+
+.project-progress .progress-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(102, 126, 234, 0.15);
+  overflow: hidden;
+}
+
+.project-progress .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.progress-value {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px;
+}
+
+.reports-page.dark .loading-state {
+  color: #a0a0a0;
+}
+
+.reports-page.light .loading-state {
+  color: #666;
+}

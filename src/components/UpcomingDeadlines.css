@@ -1,0 +1,187 @@
+.upcoming-deadlines {
+  padding: 18px;
+  border-radius: 14px;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease 0.3s backwards;
+}
+
+.upcoming-deadlines.dark {
+  background: rgba(20, 26, 40, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+}
+
+.upcoming-deadlines.light {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.upcoming-deadlines.dark .section-title {
+  color: #e0e0e0;
+}
+
+.upcoming-deadlines.light .section-title {
+  color: #1a1a1a;
+}
+
+.deadlines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deadlines-skeleton-title {
+  width: 160px;
+  height: 22px;
+  margin-bottom: 14px;
+}
+
+.deadlines-skeleton-row {
+  width: 100%;
+  height: 52px;
+  border-radius: 10px;
+}
+
+.deadline-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease backwards;
+  cursor: pointer;
+}
+
+.upcoming-deadlines.dark .deadline-item {
+  background-color: rgba(18, 23, 36, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.upcoming-deadlines.dark .deadline-item:hover {
+  background-color: #2a2a2a;
+  transform: translateX(5px);
+}
+
+.upcoming-deadlines.light .deadline-item {
+  background-color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.upcoming-deadlines.light .deadline-item:hover {
+  background-color: #ffffff;
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.deadline-icon {
+  font-size: 20px;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.deadline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.deadline-date {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.upcoming-deadlines.dark .deadline-date {
+  color: #e0e0e0;
+}
+
+.upcoming-deadlines.light .deadline-date {
+  color: #1a1a1a;
+}
+
+.deadline-title {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.upcoming-deadlines.dark .deadline-title {
+  color: #a0a0a0;
+}
+
+.upcoming-deadlines.light .deadline-title {
+  color: #666;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+}
+
+.empty-state-card {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.empty-cta {
+  border: 1px solid rgba(102, 126, 234, 0.4);
+  background: rgba(102, 126, 234, 0.1);
+  color: #7aa2ff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upcoming-deadlines.light .empty-cta {
+  color: #334155;
+}
+
+.deadlines-error {
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: #f59e0b;
+}
+
+.upcoming-deadlines.dark .loading-state,
+.upcoming-deadlines.dark .empty-state {
+  color: #a0a0a0;
+}
+
+.upcoming-deadlines.light .loading-state,
+.upcoming-deadlines.light .empty-state {
+  color: #666;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

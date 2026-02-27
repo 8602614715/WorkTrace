@@ -1,0 +1,392 @@
+.sprints-page {
+  padding: 25px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.sprints-page.dark {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+}
+
+.sprints-page.light {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.sprints-page .section-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.sprints-page.dark .section-title {
+  color: #e0e0e0;
+}
+
+.sprints-page.light .section-title {
+  color: #1a1a1a;
+}
+
+.sprints-subtitle {
+  font-size: 14px;
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.sprints-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sprint-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.sprint-form input,
+.sprint-form select {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid #d0d0d0;
+  background: transparent;
+  font-size: 13px;
+  min-width: 140px;
+}
+
+.sprints-page.dark .sprint-form input,
+.sprints-page.dark .sprint-form select {
+  border-color: #2a2a2a;
+  color: #e0e0e0;
+  background-color: #1f1f1f;
+}
+
+.create-sprint-button {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: none;
+  background: #667eea;
+  color: #fff;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.create-sprint-button:hover {
+  background: #5a6fe0;
+}
+
+.sprints-page.dark .sprints-subtitle {
+  color: #a0a0a0;
+}
+
+.sprints-page.light .sprints-subtitle {
+  color: #666;
+}
+
+.sprints-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sprint-card {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 4px solid;
+}
+
+.sprints-page.dark .sprint-card {
+  background-color: #242424;
+  border-color: #2a2a2a;
+}
+
+.sprints-page.light .sprint-card {
+  background-color: #fafafa;
+  border-color: #e0e0e0;
+}
+
+.sprint-card.status-active {
+  border-left-color: #667eea;
+}
+
+.sprint-card.status-completed {
+  border-left-color: #10b981;
+}
+
+.sprint-card.status-planned {
+  border-left-color: #f59e0b;
+}
+
+.sprint-icon {
+  font-size: 28px;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.sprint-content {
+  flex: 1;
+}
+
+.sprint-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.manage-button {
+  border: none;
+  background: rgba(102, 126, 234, 0.15);
+  color: #667eea;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.sprint-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.manage-button.delete {
+  background: rgba(239, 68, 68, 0.16);
+  color: #ef4444;
+}
+
+.manage-button.save {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.manage-button.cancel {
+  background: rgba(148, 163, 184, 0.2);
+  color: #64748b;
+}
+
+.sprint-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sprint-edit-form input,
+.sprint-edit-form select {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid #d0d0d0;
+  background: transparent;
+  font-size: 13px;
+}
+
+.sprint-edit-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sprints-page.dark .sprint-edit-form input,
+.sprints-page.dark .sprint-edit-form select {
+  border-color: #2a2a2a;
+  color: #e0e0e0;
+  background-color: #1f1f1f;
+}
+
+.sprint-name {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.sprints-page.dark .sprint-name {
+  color: #e0e0e0;
+}
+
+.sprints-page.light .sprint-name {
+  color: #1a1a1a;
+}
+
+.sprint-goal {
+  font-size: 13px;
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
+.sprints-page.dark .sprint-goal {
+  color: #a0a0a0;
+}
+
+.sprints-page.light .sprint-goal {
+  color: #666;
+}
+
+.sprint-dates {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.sprints-page.dark .sprint-dates {
+  color: #a0a0a0;
+}
+
+.sprints-page.light .sprint-dates {
+  color: #666;
+}
+
+.date-icon {
+  font-size: 14px;
+  color: #667eea;
+}
+
+.sprint-status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+
+.sprint-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.sprint-progress .progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(102, 126, 234, 0.15);
+  overflow: hidden;
+}
+
+.sprint-progress .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.sprint-card.status-active .sprint-status {
+  background-color: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+}
+
+.sprint-card.status-completed .sprint-status {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.sprint-card.status-planned .sprint-status {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.empty-state,
+.loading-state {
+  text-align: center;
+  padding: 40px;
+}
+
+.sprint-tasks-panel {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.sprints-page.dark .sprint-tasks-panel {
+  background-color: #202020;
+  border: 1px solid #2a2a2a;
+}
+
+.sprints-page.light .sprint-tasks-panel {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.tasks-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.tasks-column h4 {
+  font-size: 13px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.task-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.sprints-page.dark .task-row {
+  background-color: #2a2a2a;
+}
+
+.sprints-page.light .task-row {
+  background-color: #ffffff;
+}
+
+.task-action {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-size: 16px;
+}
+
+.task-action.add {
+  color: #10b981;
+}
+
+.task-action.remove {
+  color: #ef4444;
+}
+
+.sprints-page.dark .empty-state,
+.sprints-page.dark .loading-state {
+  color: #a0a0a0;
+}
+
+.sprints-page.light .empty-state,
+.sprints-page.light .loading-state {
+  color: #666;
+}

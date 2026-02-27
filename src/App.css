@@ -1,0 +1,29 @@
+.app {
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-attachment: fixed;
+}
+
+.app.dark {
+  background: radial-gradient(circle at top left, #1f2745 0%, #0c1224 45%, #0a0d1a 100%);
+  color: #ffffff;
+  --surface: rgba(20, 26, 40, 0.88);
+  --surface-2: rgba(18, 23, 36, 0.7);
+  --stroke: rgba(148, 163, 184, 0.16);
+  --accent: #7c8cff;
+  --accent-2: #8b5cf6;
+  --muted: #94a3b8;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.app.light {
+  background: radial-gradient(circle at top left, #ffffff 0%, #f2f4fb 55%, #e9ecf5 100%);
+  color: #0f172a;
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-2: rgba(244, 246, 252, 0.9);
+  --stroke: rgba(148, 163, 184, 0.2);
+  --accent: #4f46e5;
+  --accent-2: #7c3aed;
+  --muted: #64748b;
+  --shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+}
