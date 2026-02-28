@@ -40,10 +40,20 @@ const apiRequest = async (endpoint, options = {}) => {
     
     // Handle network errors
     if (!response.ok) {
-      let errorMessage = 'An error occurred';
+      let errorMessage = `Request failed (${response.status})`;
       try {
-        const data = await response.json();
-        errorMessage = data.message || data.detail || errorMessage;
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await response.json();
+          errorMessage = data.message || data.detail || errorMessage;
+        } else {
+          const rawText = await response.text();
+          if (rawText && rawText.trim()) {
+            errorMessage = rawText.trim().slice(0, 300);
+          } else if (response.statusText) {
+            errorMessage = response.statusText;
+          }
+        }
       } catch (e) {
         // If response is not JSON, use status text
         errorMessage = response.statusText || errorMessage;
@@ -51,15 +61,23 @@ const apiRequest = async (endpoint, options = {}) => {
       
       // Handle specific status codes
       if (response.status === 401) {
-        errorMessage = 'Unauthorized. Please login again.';
+        if (!errorMessage || errorMessage === `Request failed (${response.status})`) {
+          errorMessage = 'Unauthorized. Please login again.';
+        }
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       } else if (response.status === 403) {
-        errorMessage = 'Access forbidden. You don\'t have permission.';
+        if (!errorMessage || errorMessage === `Request failed (${response.status})`) {
+          errorMessage = 'Access forbidden. You don\'t have permission.';
+        }
       } else if (response.status === 404) {
-        errorMessage = 'Resource not found.';
+        if (!errorMessage || errorMessage === `Request failed (${response.status})`) {
+          errorMessage = 'Resource not found.';
+        }
       } else if (response.status === 500) {
-        errorMessage = 'Server error. Please try again later.';
+        if (!errorMessage || errorMessage === `Request failed (${response.status})`) {
+          errorMessage = 'Server error. Please try again later.';
+        }
       }
       
       const error = new Error(errorMessage);
