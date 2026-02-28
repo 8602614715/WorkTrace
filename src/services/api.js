@@ -78,6 +78,10 @@ const apiRequest = async (endpoint, options = {}) => {
         if (!errorMessage || errorMessage === `Request failed (${response.status})`) {
           errorMessage = 'Server error. Please try again later.';
         }
+      } else if (response.status === 405) {
+        if (!errorMessage || errorMessage === `Request failed (${response.status})`) {
+          errorMessage = 'Method not allowed. Check Vercel API routing/config.';
+        }
       }
       
       const error = new Error(errorMessage);
