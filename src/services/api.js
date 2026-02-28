@@ -1,6 +1,4 @@
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL ||
-  (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api');
+const API_BASE_URL = 'http://localhost:5000/api';
 
 
 // Helper function to get auth token
@@ -77,10 +75,6 @@ const apiRequest = async (endpoint, options = {}) => {
       } else if (response.status === 500) {
         if (!errorMessage || errorMessage === `Request failed (${response.status})`) {
           errorMessage = 'Server error. Please try again later.';
-        }
-      } else if (response.status === 405) {
-        if (!errorMessage || errorMessage === `Request failed (${response.status})`) {
-          errorMessage = 'Method not allowed. Check Vercel API routing/config.';
         }
       }
       

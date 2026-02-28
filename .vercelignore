@@ -1,9 +1,0 @@
-.git
-node_modules
-backend/venv
-backend/__pycache__
-backend/worktrace.db
-api/backend/venv
-api/backend/__pycache__
-api/backend/worktrace.db
-*.log

@@ -26,9 +26,9 @@ async def lifespan(app: FastAPI):
     stop_event = asyncio.Event()
     reminder_task = None
     cleanup_task = None
-    if os.getenv("ENABLE_REMINDER_SCHEDULER", "false").lower() == "true":
+    if os.getenv("ENABLE_REMINDER_SCHEDULER", "true").lower() == "true":
         reminder_task = asyncio.create_task(reminder_scheduler(stop_event))
-    if os.getenv("ENABLE_TASK_CLEANUP", "false").lower() == "true":
+    if os.getenv("ENABLE_TASK_CLEANUP", "true").lower() == "true":
         cleanup_task = asyncio.create_task(completed_task_cleanup_scheduler(stop_event))
     yield
     stop_event.set()
@@ -53,7 +53,6 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
     ],
-    allow_origin_regex=r"^https://.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
