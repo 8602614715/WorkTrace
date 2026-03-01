@@ -6,6 +6,18 @@ import { taskAPI } from '../services/api';
 import { FiX, FiSave, FiMessageSquare, FiActivity } from 'react-icons/fi';
 import './TaskModal.css';
 
+const STATUS_OPTIONS = [
+  { value: 'todo', label: 'To Do' },
+  { value: 'inProgress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+];
+
+const PRIORITY_OPTIONS = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+];
+
 const TaskModal = ({
   isOpen,
   onClose,
@@ -139,6 +151,27 @@ const TaskModal = ({
     }));
   };
 
+  const setFieldValue = (name, value) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const applyDueShortcut = (shortcut) => {
+    if (shortcut === 'clear') {
+      setFieldValue('dueDate', '');
+      return;
+    }
+    const next = new Date();
+    if (shortcut === 'tomorrow') {
+      next.setDate(next.getDate() + 1);
+    } else if (shortcut === 'nextWeek') {
+      next.setDate(next.getDate() + 7);
+    }
+    const iso = new Date(next.getTime() - (next.getTimezoneOffset() * 60000))
+      .toISOString()
+      .split('T')[0];
+    setFieldValue('dueDate', iso);
+  };
+
   if (!isOpen) return null;
 
   return createPortal(
@@ -160,9 +193,14 @@ const TaskModal = ({
               type="text"
               value={formData.title}
               onChange={handleChange}
+              maxLength={120}
               required
-              placeholder="Enter task title"
+              placeholder="Enter a concise task title"
             />
+            <div className="field-meta">
+              <span>Clear action + outcome works best.</span>
+              <span>{formData.title.length}/120</span>
+            </div>
           </div>
 
           <div className="form-group">
@@ -172,38 +210,47 @@ const TaskModal = ({
               name="description"
               value={formData.description}
               onChange={handleChange}
-              rows="4"
-              placeholder="Enter task description"
+              rows="3"
+              maxLength={1000}
+              placeholder="Context, acceptance criteria, or links"
             />
+            <div className="field-meta">
+              <span>Optional but helpful for handoffs.</span>
+              <span>{formData.description.length}/1000</span>
+            </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="status">Status</label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-              >
-                <option value="todo">To Do</option>
-                <option value="inProgress">In Progress</option>
-                <option value="completed">Completed</option>
-              </select>
+              <label>Status</label>
+              <div className="option-chip-group">
+                {STATUS_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`option-chip ${formData.status === option.value ? 'active' : ''}`}
+                    onClick={() => setFieldValue('status', option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="priority">Priority</label>
-              <select
-                id="priority"
-                name="priority"
-                value={formData.priority}
-                onChange={handleChange}
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
+              <label>Priority</label>
+              <div className="option-chip-group priority-group">
+                {PRIORITY_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`option-chip ${formData.priority === option.value ? `active priority-${option.value}` : ''}`}
+                    onClick={() => setFieldValue('priority', option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -217,6 +264,12 @@ const TaskModal = ({
                 value={formData.dueDate}
                 onChange={handleChange}
               />
+              <div className="date-shortcuts">
+                <button type="button" onClick={() => applyDueShortcut('today')}>Today</button>
+                <button type="button" onClick={() => applyDueShortcut('tomorrow')}>Tomorrow</button>
+                <button type="button" onClick={() => applyDueShortcut('nextWeek')}>+7 Days</button>
+                <button type="button" onClick={() => applyDueShortcut('clear')}>Clear</button>
+              </div>
             </div>
 
             {formData.status === 'inProgress' && (
@@ -225,12 +278,16 @@ const TaskModal = ({
                 <input
                   id="progress"
                   name="progress"
-                  type="number"
+                  type="range"
                   min="0"
                   max="100"
                   value={formData.progress}
                   onChange={handleChange}
                 />
+                <div className="field-meta">
+                  <span>Current completion</span>
+                  <span>{formData.progress}%</span>
+                </div>
               </div>
             )}
           </div>
@@ -250,6 +307,12 @@ const TaskModal = ({
                 </option>
               ))}
             </select>
+            {teamMembers.length === 0 && (
+              <div className="field-meta">
+                <span>No team members found. Invite members from Team view.</span>
+                <span />
+              </div>
+            )}
           </div>
 
           {saveError && <div className="modal-error">{saveError}</div>}

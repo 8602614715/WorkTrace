@@ -153,6 +153,22 @@
   font-family: inherit;
 }
 
+.field-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.modal-content.dark .field-meta {
+  color: #94a3b8;
+}
+
+.modal-content.light .field-meta {
+  color: #64748b;
+}
+
 .modal-content.dark .form-group input,
 .modal-content.dark .form-group textarea,
 .modal-content.dark .form-group select {
@@ -187,6 +203,79 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+.option-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.option-chip {
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-content.dark .option-chip {
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+.modal-content.light .option-chip {
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.option-chip.active {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.16);
+}
+
+.option-chip.active.priority-low {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.18);
+}
+
+.option-chip.active.priority-medium {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.18);
+}
+
+.option-chip.active.priority-high {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.date-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.date-shortcuts button {
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.modal-content.dark .date-shortcuts button {
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+.modal-content.light .date-shortcuts button {
+  border-color: #cbd5e1;
+  color: #334155;
 }
 
 .modal-actions {
