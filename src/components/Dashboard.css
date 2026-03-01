@@ -3,6 +3,7 @@
   min-height: 100vh;
   transition: all 0.3s ease;
   position: relative;
+  overflow-x: hidden;
 }
 
 .dashboard-main {
@@ -12,10 +13,12 @@
   margin-left: 220px;
   transition: margin-left 0.3s ease;
   padding-bottom: 40px;
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
   .dashboard-main {
     margin-left: 0;
+    padding-bottom: 110px;
   }
 }

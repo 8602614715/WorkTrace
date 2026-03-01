@@ -154,4 +154,21 @@
     opacity: 0.65;
     cursor: not-allowed;
   }
+
+  @media (max-width: 768px) {
+    #chatbot-bubble {
+      width: 50px;
+      height: 50px;
+      right: 14px;
+      bottom: 84px;
+    }
+
+    #chatbot-window {
+      right: 10px;
+      left: 10px;
+      width: auto;
+      height: min(62vh, 460px);
+      bottom: 146px;
+    }
+  }
   

@@ -390,3 +390,54 @@
 .sprints-page.light .loading-state {
   color: #666;
 }
+
+@media (max-width: 768px) {
+  .sprints-page {
+    padding: 14px;
+  }
+
+  .sprints-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sprint-form {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .sprint-form input,
+  .sprint-form select,
+  .create-sprint-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .create-sprint-button {
+    justify-content: center;
+  }
+
+  .sprint-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .sprint-icon {
+    font-size: 22px;
+  }
+
+  .sprint-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sprint-edit-dates {
+    grid-template-columns: 1fr;
+  }
+
+  .tasks-columns {
+    grid-template-columns: 1fr;
+  }
+}

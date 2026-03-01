@@ -573,17 +573,61 @@
 
 @media (max-width: 768px) {
   .header {
-    padding: 15px 20px;
+    padding: 10px 12px;
+    gap: 10px;
   }
-  
+
+  .header-left {
+    max-width: none;
+    min-width: 0;
+  }
+
+  .header-right {
+    gap: 6px;
+  }
+
+  .theme-toggle,
+  .notification-button,
+  .more-icon-button {
+    padding: 6px;
+  }
+
+  .profile-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .search-input {
+    font-size: 11px;
+    padding: 9px 12px 9px 34px;
+  }
+
+  .search-icon {
+    left: 12px;
+    font-size: 14px;
+  }
+
+  .notif-dropdown,
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+    width: min(92vw, 320px);
+  }
+
+  .search-results-panel {
+    left: 0;
+    right: 0;
+    max-height: 52vh;
+  }
+
   .date-time {
     display: none;
   }
-  
+
   .username {
     display: none;
   }
-  
+
   .user-role {
     display: none;
   }

@@ -378,3 +378,40 @@
 .reports-page.light .loading-state {
   color: #666;
 }
+
+@media (max-width: 768px) {
+  .reports-page {
+    padding: 14px;
+  }
+
+  .reports-grid {
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .report-card {
+    padding: 14px 10px;
+  }
+
+  .reports-sections {
+    gap: 14px;
+  }
+
+  .chart {
+    padding: 10px;
+  }
+
+  .chart-bars {
+    gap: 6px;
+    height: 140px;
+  }
+
+  .bar-fill {
+    max-width: 30px;
+  }
+
+  .project-progress {
+    width: 100%;
+    min-width: 0;
+  }
+}

@@ -278,3 +278,52 @@
     max-height: 260px;
   }
 }
+
+@media (max-width: 768px) {
+  .calendar-planner {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .planner-main,
+  .day-panel {
+    padding: 10px;
+  }
+
+  .calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .calendar-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .calendar-grid {
+    gap: 4px;
+  }
+
+  .day-cell {
+    min-height: 84px;
+    padding: 5px;
+  }
+
+  .weekday-cell {
+    font-size: 10px;
+  }
+
+  .day-number {
+    font-size: 11px;
+  }
+
+  .calendar-task {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+
+  .quick-add-row {
+    grid-template-columns: 1fr;
+  }
+}

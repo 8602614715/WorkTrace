@@ -50,7 +50,7 @@
   background: transparent;
   border-radius: 8px;
   padding: 8px;
-  color: whitesmoke;
+  color: inherit;
 }
 
 .search-row input {
@@ -700,5 +700,9 @@
 
   .task-filters {
     grid-template-columns: 1fr;
+  }
+
+  .task-list {
+    max-height: none;
   }
 }

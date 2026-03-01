@@ -3,6 +3,7 @@
   padding: 24px 28px 40px;
   overflow-y: auto;
   transition: all 0.3s ease;
+  min-width: 0;
 }
 
 .content-page {
@@ -69,10 +70,14 @@
 
 @media (max-width: 768px) {
   .main-content {
-    padding: 20px;
+    padding: 14px 12px 22px;
   }
   
   .dashboard-layout {
-    gap: 18px;
+    gap: 14px;
+  }
+
+  .analytics-section {
+    padding: 14px;
   }
 }
