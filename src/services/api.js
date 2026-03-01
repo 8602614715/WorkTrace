@@ -235,6 +235,12 @@ export const projectAPI = {
     });
   },
 
+  delete: async (id) => {
+    return apiRequest(`/projects/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
   getOverview: async () => {
     return apiRequest('/projects/overview');
   },
@@ -439,6 +445,12 @@ export const settingsAPI = {
     return apiRequest('/settings/password', {
       method: 'PUT',
       body: JSON.stringify({ password, new_password: newPassword }),
+    });
+  },
+  deleteAccount: async (password) => {
+    return apiRequest('/settings/account', {
+      method: 'DELETE',
+      body: JSON.stringify({ password }),
     });
   },
 };

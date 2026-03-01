@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { settingsAPI } from '../services/api';
 import { FiUser, FiMail, FiUpload, FiBell, FiAlertTriangle } from 'react-icons/fi';
 import Skeleton from './Skeleton';
@@ -9,6 +10,7 @@ import './Settings.css';
 const Settings = () => {
   const { theme, toggleTheme, setTheme } = useTheme();
   const { addToast } = useToast();
+  const { logout } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -94,6 +96,29 @@ const Settings = () => {
     setPasswordForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleUpdatePassword = async () => {
+    setStatusMessage('');
+    if (!passwordForm.currentPassword || !passwordForm.newPassword) {
+      setStatusMessage('Please fill both password fields.');
+      addToast('Please fill both password fields.', 'error');
+      return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      setStatusMessage('New password must be at least 6 characters.');
+      addToast('New password must be at least 6 characters.', 'error');
+      return;
+    }
+    try {
+      await settingsAPI.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+      setPasswordForm({ currentPassword: '', newPassword: '' });
+      setStatusMessage('Password updated.');
+      addToast('Password updated.', 'success');
+    } catch (err) {
+      setStatusMessage(err.message || 'Failed to update password.');
+      addToast(err.message || 'Failed to update password.', 'error');
+    }
+  };
+
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setStatusMessage('');
@@ -140,9 +165,31 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = () => {
-    const confirmed = window.confirm('Delete your account permanently? This action cannot be undone.');
-    if (!confirmed) return;
-    addToast('Delete account endpoint is not connected yet.', 'error');
+    const warningMessage = [
+      'Delete your account permanently?',
+      'This removes your tasks, projects, and workspace data.',
+      'If needed, export important data before continuing.',
+    ].join('\n');
+    const confirmed = window.confirm(warningMessage);
+    if (!confirmed) {
+      return;
+    }
+
+    const password = window.prompt('Enter your current password to confirm account deletion:');
+    if (!password) {
+      setStatusMessage('Account deletion cancelled. Password not provided.');
+      return;
+    }
+
+    settingsAPI.deleteAccount(password)
+      .then(async () => {
+        addToast('Account deleted successfully.', 'success');
+        await logout();
+      })
+      .catch((err) => {
+        setStatusMessage(err.message || 'Failed to delete account.');
+        addToast(err.message || 'Failed to delete account.', 'error');
+      });
   };
 
   if (loading) {
@@ -214,7 +261,7 @@ const Settings = () => {
                   value={passwordForm.newPassword}
                   onChange={handlePasswordChange}
                 />
-                <button type="button" className="primary-button muted-btn">
+                <button type="button" className="primary-button muted-btn" onClick={handleUpdatePassword}>
                   Update Password
                 </button>
               </div>

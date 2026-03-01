@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { projectAPI, teamAPI } from '../services/api';
-import { FiCalendar } from 'react-icons/fi';
+import { FiCalendar, FiTrash2 } from 'react-icons/fi';
 import Skeleton from './Skeleton';
 import './Projects.css';
 
@@ -231,6 +231,23 @@ const Projects = () => {
     }
   };
 
+  const deleteProject = async (projectId, projectName) => {
+    const confirmed = window.confirm(
+      `Delete project "${projectName}"?\nThis also deletes related tasks, sprints, and deadlines.`
+    );
+    if (!confirmed) {
+      return;
+    }
+    try {
+      await projectAPI.delete(projectId);
+      addToast('Project deleted successfully.', 'success');
+      await fetchProjects();
+    } catch (err) {
+      addToast(err.message || 'Failed to delete project.', 'error');
+      console.error(err);
+    }
+  };
+
   const formatDate = (value) => {
     if (!value) return 'No deadline';
     const date = new Date(value);
@@ -421,6 +438,13 @@ const Projects = () => {
                       onClick={() => toggleEditMembers(project)}
                     >
                       {editingMembers[project.id] ? 'Hide members' : 'Add members'}
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary-button danger-action"
+                      onClick={() => deleteProject(project.id, project.name)}
+                    >
+                      <FiTrash2 /> Delete
                     </button>
                   </div>
                 </div>

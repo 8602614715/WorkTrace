@@ -206,6 +206,10 @@ class UserVerification(BaseModel):
     new_password: str
 
 
+class AccountDeleteRequest(BaseModel):
+    password: str
+
+
 # ----- Sprints -----
 class SprintCreate(BaseModel):
     name: str

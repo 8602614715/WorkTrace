@@ -12,7 +12,7 @@ const Dashboard = () => {
     <div className="dashboard">
       <Sidebar activeView={activeView} onNavigate={setActiveView} />
       <div className="dashboard-main">
-        <Header />
+        <Header onNavigate={setActiveView} />
         <MainContent activeView={activeView} />
         <Chatbot />
       </div>

@@ -253,10 +253,18 @@
   background: transparent;
   border: 1px solid rgba(99, 102, 241, 0.45);
   color: #6366f1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .secondary-button:hover {
   transform: translateY(-1px);
+}
+
+.danger-action {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ef4444;
 }
 
 .status-message {
@@ -430,6 +438,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+.project-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .members-list {
