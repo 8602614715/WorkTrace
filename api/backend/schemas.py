@@ -85,6 +85,7 @@ class TaskResponse(BaseModel):
     priority: str
     dueDate: Optional[str] = None
     assignedTo: Optional[str] = None
+    assignedToName: Optional[str] = None
     progress: int
     icon: Optional[str] = None
     projectId: Optional[str] = None
@@ -208,6 +209,42 @@ class UserVerification(BaseModel):
 
 class AccountDeleteRequest(BaseModel):
     password: str
+
+
+# ----- Task comments / activity -----
+class TaskCommentCreate(BaseModel):
+    content: str = Field(min_length=1, max_length=2000)
+
+
+class TaskCommentResponse(BaseModel):
+    id: str
+    taskId: str
+    userId: str
+    userName: str
+    content: str
+    createdAt: str
+    updatedAt: str
+
+
+class ActivityEventResponse(BaseModel):
+    id: str
+    taskId: str
+    actorUserId: Optional[str] = None
+    actorName: Optional[str] = None
+    eventType: str
+    detail: str
+    createdAt: str
+
+
+# ----- Notifications -----
+class NotificationResponse(BaseModel):
+    id: str
+    title: str
+    message: str
+    entityType: Optional[str] = None
+    entityId: Optional[str] = None
+    isRead: bool
+    createdAt: str
 
 
 # ----- Sprints -----

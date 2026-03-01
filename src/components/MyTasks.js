@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { taskAPI } from '../services/api';
+import { taskAPI, teamAPI } from '../services/api';
 import TaskModal from './TaskModal';
 import Skeleton from './Skeleton';
 import {
@@ -44,6 +44,7 @@ const MyTasks = () => {
     overdueOnly: false,
   });
   const [newSubtaskText, setNewSubtaskText] = useState({});
+  const [teamMembers, setTeamMembers] = useState([]);
 
   const iconMap = {
     cpu: FiCpu,
@@ -84,6 +85,18 @@ const MyTasks = () => {
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const members = await teamAPI.getMembers();
+        setTeamMembers(Array.isArray(members) ? members : []);
+      } catch (err) {
+        setTeamMembers([]);
+      }
+    };
+    fetchMembers();
+  }, []);
 
   const handleAddTask = () => {
     setEditingTask(null);
@@ -230,6 +243,10 @@ const MyTasks = () => {
     () => [...tasks.todo, ...tasks.inProgress, ...tasks.completed],
     [tasks]
   );
+  const memberNameById = useMemo(
+    () => Object.fromEntries(teamMembers.map((member) => [member.id, member.name || member.email || member.id])),
+    [teamMembers]
+  );
 
   const canEdit = hasRole('admin') || hasRole('manager') || user?.id;
   const canDelete = hasRole('admin') || hasRole('manager');
@@ -311,7 +328,9 @@ const MyTasks = () => {
             Priority: {task.priority}
           </span>
         )}
-        {task.assignedTo && <div className="task-assigned">Assigned to: {task.assignedTo}</div>}
+        {task.assignedTo && (
+          <div className="task-assigned">Assigned to: {memberNameById[task.assignedTo] || task.assignedTo}</div>
+        )}
 
         <div className="subtasks-block" onClick={(e) => e.stopPropagation()}>
           {subtasks.map((subtask) => (
@@ -458,6 +477,7 @@ const MyTasks = () => {
         }}
         onSave={handleSaveTask}
         task={editingTask}
+        teamMembers={teamMembers}
         saveError={formError}
         isSaving={isSaving}
       />

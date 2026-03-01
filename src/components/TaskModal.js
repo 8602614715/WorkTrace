@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme } from '../context/ThemeContext';
-import { FiX, FiSave } from 'react-icons/fi';
+import { useToast } from '../context/ToastContext';
+import { taskAPI } from '../services/api';
+import { FiX, FiSave, FiMessageSquare, FiActivity } from 'react-icons/fi';
 import './TaskModal.css';
 
-const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
+const TaskModal = ({
+  isOpen,
+  onClose,
+  onSave,
+  task = null,
+  teamMembers = [],
+  saveError = '',
+  isSaving = false,
+}) => {
   const { theme } = useTheme();
+  const { addToast } = useToast();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -15,6 +26,11 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
     assignedTo: '',
     progress: 0,
   });
+  const [comments, setComments] = useState([]);
+  const [activity, setActivity] = useState([]);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [commentInput, setCommentInput] = useState('');
+  const [postingComment, setPostingComment] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -40,6 +56,46 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
     }
   }, [task, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen || !task?.id) {
+      setComments([]);
+      setActivity([]);
+      setCommentInput('');
+      return;
+    }
+
+    let cancelled = false;
+    const loadThread = async () => {
+      setThreadLoading(true);
+      try {
+        const [commentData, activityData] = await Promise.all([
+          taskAPI.getComments(task.id),
+          taskAPI.getActivity(task.id),
+        ]);
+        if (cancelled) {
+          return;
+        }
+        setComments(Array.isArray(commentData) ? commentData : []);
+        setActivity(Array.isArray(activityData) ? activityData : []);
+      } catch (error) {
+        if (!cancelled) {
+          addToast('Failed to load comments/activity.', 'error');
+          setComments([]);
+          setActivity([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setThreadLoading(false);
+        }
+      }
+    };
+
+    loadThread();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, task, addToast]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const payload = {
@@ -47,6 +103,32 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       progress: parseInt(formData.progress, 10) || 0,
     };
     onSave(payload);
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!task?.id) {
+      return;
+    }
+    const content = commentInput.trim();
+    if (!content) {
+      return;
+    }
+    try {
+      setPostingComment(true);
+      await taskAPI.addComment(task.id, content);
+      setCommentInput('');
+      const [commentData, activityData] = await Promise.all([
+        taskAPI.getComments(task.id),
+        taskAPI.getActivity(task.id),
+      ]);
+      setComments(Array.isArray(commentData) ? commentData : []);
+      setActivity(Array.isArray(activityData) ? activityData : []);
+    } catch (error) {
+      addToast(error.message || 'Failed to add comment.', 'error');
+    } finally {
+      setPostingComment(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -155,26 +237,92 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
 
           <div className="form-group">
             <label htmlFor="assignedTo">Assigned To</label>
-            <input
+            <select
               id="assignedTo"
               name="assignedTo"
-              type="text"
               value={formData.assignedTo}
               onChange={handleChange}
-              placeholder="User email or ID"
-            />
+            >
+              <option value="">Unassigned</option>
+              {teamMembers.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name || member.email}
+                </option>
+              ))}
+            </select>
           </div>
+
+          {saveError && <div className="modal-error">{saveError}</div>}
 
           <div className="modal-actions">
             <button type="button" className="cancel-button" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="save-button">
+            <button type="submit" className="save-button" disabled={isSaving}>
               <FiSave />
-              <span>{task ? 'Update' : 'Create'} Task</span>
+              <span>{isSaving ? 'Saving...' : `${task ? 'Update' : 'Create'} Task`}</span>
             </button>
           </div>
         </form>
+
+        {task?.id && (
+          <div className="task-thread">
+            <div className="thread-columns">
+              <section className="thread-card">
+                <h3><FiMessageSquare /> Comments</h3>
+                <form className="comment-form" onSubmit={handleAddComment}>
+                  <textarea
+                    rows="2"
+                    value={commentInput}
+                    onChange={(e) => setCommentInput(e.target.value)}
+                    placeholder="Write a comment..."
+                  />
+                  <button type="submit" disabled={postingComment}>
+                    {postingComment ? 'Posting...' : 'Post'}
+                  </button>
+                </form>
+                <div className="thread-list">
+                  {threadLoading ? (
+                    <div className="thread-empty">Loading comments...</div>
+                  ) : comments.length === 0 ? (
+                    <div className="thread-empty">No comments yet.</div>
+                  ) : (
+                    comments.map((comment) => (
+                      <div key={comment.id} className="thread-item">
+                        <div className="thread-item-top">
+                          <strong>{comment.userName}</strong>
+                          <span>{new Date(comment.createdAt).toLocaleString()}</span>
+                        </div>
+                        <p>{comment.content}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+
+              <section className="thread-card">
+                <h3><FiActivity /> Activity</h3>
+                <div className="thread-list">
+                  {threadLoading ? (
+                    <div className="thread-empty">Loading activity...</div>
+                  ) : activity.length === 0 ? (
+                    <div className="thread-empty">No activity yet.</div>
+                  ) : (
+                    activity.map((event) => (
+                      <div key={event.id} className="thread-item">
+                        <div className="thread-item-top">
+                          <strong>{event.actorName || 'System'}</strong>
+                          <span>{new Date(event.createdAt).toLocaleString()}</span>
+                        </div>
+                        <p>{event.detail}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+            </div>
+          </div>
+        )}
       </div>
     </div>,
     document.body

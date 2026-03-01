@@ -9,8 +9,32 @@ from fastapi.responses import RedirectResponse  # pyright: ignore[reportMissingI
 from dotenv import load_dotenv  # pyright: ignore[reportMissingImports]
 
 from database import engine, Base
-from models import User, Task, Project, Deadline, DeadlineReminderLog
-from routers import auth, todos, users, projects, deadlines, team, analytics, dashboard, admin, chatbot, reports, sprints, settings
+from models import (
+    User,
+    Task,
+    Project,
+    Deadline,
+    DeadlineReminderLog,
+    TaskComment,
+    ActivityEvent,
+    Notification,
+)
+from routers import (
+    auth,
+    todos,
+    users,
+    projects,
+    deadlines,
+    team,
+    analytics,
+    dashboard,
+    admin,
+    chatbot,
+    reports,
+    sprints,
+    settings,
+    notifications,
+)
 from services.cleanup import completed_task_cleanup_scheduler
 from services.reminders import reminder_scheduler
 
@@ -79,6 +103,7 @@ app.include_router(chatbot.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
 app.include_router(sprints.router, prefix="/api")
 app.include_router(settings.router, prefix="/api")
+app.include_router(notifications.router, prefix="/api")
 
 
 @app.get("/", include_in_schema=False)

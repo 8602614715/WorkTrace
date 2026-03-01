@@ -209,6 +209,21 @@ export const taskAPI = {
       method: 'DELETE',
     });
   },
+
+  getComments: async (taskId) => {
+    return apiRequest(`/tasks/${taskId}/comments`);
+  },
+
+  addComment: async (taskId, content) => {
+    return apiRequest(`/tasks/${taskId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  },
+
+  getActivity: async (taskId) => {
+    return apiRequest(`/tasks/${taskId}/activity`);
+  },
 };
 
 // Project APIs
@@ -465,6 +480,34 @@ export const chatbotAPI = {
   },
 };
 
+// Notifications APIs
+export const notificationsAPI = {
+  getAll: async ({ unreadOnly = false, limit = 20 } = {}) => {
+    const params = new URLSearchParams();
+    if (unreadOnly) {
+      params.append('unreadOnly', 'true');
+    }
+    if (limit) {
+      params.append('limit', String(limit));
+    }
+    const query = params.toString();
+    return apiRequest(`/notifications${query ? `?${query}` : ''}`);
+  },
+  getUnreadCount: async () => {
+    return apiRequest('/notifications/unread-count');
+  },
+  markRead: async (id) => {
+    return apiRequest(`/notifications/${id}/read`, {
+      method: 'PATCH',
+    });
+  },
+  markAllRead: async () => {
+    return apiRequest('/notifications/read-all', {
+      method: 'PATCH',
+    });
+  },
+};
+
 const apiServices = {
   authAPI,
   taskAPI,
@@ -476,6 +519,7 @@ const apiServices = {
   sprintsAPI,
   settingsAPI,
   chatbotAPI,
+  notificationsAPI,
 };
 
 export default apiServices;

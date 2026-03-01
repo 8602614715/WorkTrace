@@ -109,6 +109,8 @@ class Task(Base):
     project = relationship("Project", back_populates="tasks")
     sprint = relationship("Sprint", back_populates="tasks")
     subtasks = relationship("SubTask", back_populates="task", cascade="all, delete-orphan")
+    comments = relationship("TaskComment", back_populates="task", cascade="all, delete-orphan")
+    activity_events = relationship("ActivityEvent", back_populates="task", cascade="all, delete-orphan")
 
 
 class SubTask(Base):
@@ -186,3 +188,53 @@ class DeadlineReminderLog(Base):
     reminder_date = Column(String, nullable=False)  # YYYY-MM-DD (day reminder was sent)
     due_date = Column(String, nullable=True)  # YYYY-MM-DD (item due date)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class TaskComment(Base):
+    """Comment thread entries for tasks."""
+    __tablename__ = "task_comments"
+
+    id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    task_id = Column(String, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    task = relationship("Task", back_populates="comments")
+    user = relationship("User")
+
+
+class ActivityEvent(Base):
+    """Activity log entries for task-level events."""
+    __tablename__ = "activity_events"
+
+    id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    task_id = Column(String, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    actor_user_id = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    event_type = Column(String, nullable=False, index=True)  # task_created, status_changed, comment_added, etc.
+    detail = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    task = relationship("Task", back_populates="activity_events")
+    actor = relationship("User")
+
+
+class Notification(Base):
+    """In-app notifications for users."""
+    __tablename__ = "notifications"
+
+    id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    entity_type = Column(String, nullable=True, index=True)  # task, project, comment
+    entity_id = Column(String, nullable=True, index=True)
+    is_read = Column(Integer, default=0, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    user = relationship("User")

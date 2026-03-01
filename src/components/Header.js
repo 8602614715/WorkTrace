@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { FiSearch, FiBell, FiMoreVertical, FiSun, FiMoon, FiLogOut, FiUser } from 'react-icons/fi';
-import { taskAPI, projectAPI, teamAPI } from '../services/api';
+import { taskAPI, projectAPI, teamAPI, notificationsAPI } from '../services/api';
 import './Header.css';
 
 const Header = ({ onNavigate }) => {
@@ -18,9 +18,14 @@ const Header = ({ onNavigate }) => {
     projects: [],
     members: [],
   });
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(false);
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const searchRef = useRef(null);
+  const notifRef = useRef(null);
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
@@ -44,6 +49,9 @@ const Header = ({ onNavigate }) => {
       }
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSearchResults(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setNotifOpen(false);
       }
     };
 
@@ -132,9 +140,73 @@ const Header = ({ onNavigate }) => {
     };
   }, [searchQuery]);
 
+  useEffect(() => {
+    let cancelled = false;
+    let intervalRef = null;
+
+    const loadNotifications = async () => {
+      try {
+        setNotifLoading(true);
+        const [items, unread] = await Promise.all([
+          notificationsAPI.getAll({ limit: 12 }),
+          notificationsAPI.getUnreadCount(),
+        ]);
+        if (cancelled) {
+          return;
+        }
+        setNotifications(Array.isArray(items) ? items : []);
+        setUnreadCount(unread?.unreadCount || 0);
+      } catch (error) {
+        if (!cancelled) {
+          setNotifications([]);
+          setUnreadCount(0);
+        }
+      } finally {
+        if (!cancelled) {
+          setNotifLoading(false);
+        }
+      }
+    };
+
+    loadNotifications();
+    intervalRef = setInterval(loadNotifications, 30000);
+
+    return () => {
+      cancelled = true;
+      if (intervalRef) {
+        clearInterval(intervalRef);
+      }
+    };
+  }, []);
+
   const handleNavigateFromSearch = (view) => {
     setShowSearchResults(false);
     onNavigate && onNavigate(view);
+  };
+
+  const handleMarkNotificationRead = async (notificationId) => {
+    try {
+      await notificationsAPI.markRead(notificationId);
+      const [items, unread] = await Promise.all([
+        notificationsAPI.getAll({ limit: 12 }),
+        notificationsAPI.getUnreadCount(),
+      ]);
+      setNotifications(Array.isArray(items) ? items : []);
+      setUnreadCount(unread?.unreadCount || 0);
+    } catch (error) {
+      // no-op
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationsAPI.markAllRead();
+      const items = await notificationsAPI.getAll({ limit: 12 });
+      setNotifications(Array.isArray(items) ? items : []);
+      setUnreadCount(0);
+    } catch (error) {
+      // no-op
+    }
   };
 
   const userName = user?.name || user?.email || 'User';
@@ -240,9 +312,46 @@ const Header = ({ onNavigate }) => {
           <div className="profile-avatar">
             <img src={avatarUrl} alt="Profile" />
           </div>
-          <button type="button" className="notification-button" aria-label="Notifications">
-            <FiBell className="notification-icon" />
-          </button>
+          <div className="notif-container" ref={notifRef}>
+            <button
+              type="button"
+              className="notification-button"
+              aria-label="Notifications"
+              aria-expanded={notifOpen}
+              onClick={() => setNotifOpen((prev) => !prev)}
+            >
+              <FiBell className="notification-icon" />
+              {unreadCount > 0 && <span className="notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+            </button>
+            {notifOpen && (
+              <div className="notif-dropdown" role="menu" aria-label="Notifications">
+                <div className="notif-header">
+                  <span>Notifications</span>
+                  <button type="button" onClick={handleMarkAllRead}>Mark all read</button>
+                </div>
+                <div className="notif-list">
+                  {notifLoading ? (
+                    <div className="notif-empty">Loading...</div>
+                  ) : notifications.length === 0 ? (
+                    <div className="notif-empty">No notifications</div>
+                  ) : (
+                    notifications.map((notification) => (
+                      <button
+                        key={notification.id}
+                        type="button"
+                        className={`notif-item ${notification.isRead ? '' : 'unread'}`}
+                        onClick={() => handleMarkNotificationRead(notification.id)}
+                      >
+                        <strong>{notification.title}</strong>
+                        <p>{notification.message}</p>
+                        <span>{new Date(notification.createdAt).toLocaleString()}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
           <div className="menu-container" ref={menuRef}>
             <button
               ref={menuButtonRef}
