@@ -3,10 +3,10 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
-from dotenv import load_dotenv
+from fastapi import FastAPI  # pyright: ignore[reportMissingImports]
+from fastapi.middleware.cors import CORSMiddleware  # pyright: ignore[reportMissingImports]
+from fastapi.responses import RedirectResponse  # pyright: ignore[reportMissingImports]
+from dotenv import load_dotenv  # pyright: ignore[reportMissingImports]
 
 from database import engine, Base
 from models import User, Task, Project, Deadline, DeadlineReminderLog
@@ -38,27 +38,25 @@ async def lifespan(app: FastAPI):
         await cleanup_task
 
 
+
 app = FastAPI(
     title="WorkTrace API",
     version="1.0.0",
     lifespan=lifespan,
 )
 
-frontend_url = os.getenv("FRONTEND_URL")
-allowed_origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-]
-if frontend_url:
-    allowed_origins.append(frontend_url)
-
 # CORS
+frontend_url = os.getenv("FRONTEND_URL")
+allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "https://work-trace.vercel.app/"
+    ],
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_origin_regex=r"^https://.*\.vercel\.app$",
+   
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -92,6 +90,6 @@ async def health_check():
 
 
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn  # pyright: ignore[reportMissingImports]
     port = int(os.getenv("PORT", 5000))
     uvicorn.run(app, host="0.0.0.0", port=port)
