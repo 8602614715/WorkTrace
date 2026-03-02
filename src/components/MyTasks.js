@@ -43,6 +43,13 @@ const MyTasks = () => {
     dueTo: '',
     overdueOnly: false,
   });
+  const [selectedTaskIds, setSelectedTaskIds] = useState([]);
+  const [bulkAction, setBulkAction] = useState({
+    status: '',
+    priority: '',
+    assignedTo: '__keep__',
+    recurrence: '',
+  });
   const [newSubtaskText, setNewSubtaskText] = useState({});
   const [teamMembers, setTeamMembers] = useState([]);
 
@@ -198,6 +205,65 @@ const MyTasks = () => {
     await fetchTasks(next);
   };
 
+  const toggleTaskSelection = (taskId) => {
+    setSelectedTaskIds((prev) => (
+      prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
+    ));
+  };
+
+  const toggleSelectAllVisible = () => {
+    const ids = allVisibleTasks.map((task) => task.id);
+    const allSelected = ids.length > 0 && ids.every((id) => selectedTaskIds.includes(id));
+    setSelectedTaskIds(allSelected ? [] : ids);
+  };
+
+  const clearSelection = () => {
+    setSelectedTaskIds([]);
+  };
+
+  const applyBulkAction = async () => {
+    if (selectedTaskIds.length === 0) return;
+    const payload = {
+      taskIds: selectedTaskIds,
+    };
+    if (bulkAction.status) payload.status = bulkAction.status;
+    if (bulkAction.priority) payload.priority = bulkAction.priority;
+    if (bulkAction.assignedTo !== '__keep__') payload.assignedTo = bulkAction.assignedTo;
+    if (bulkAction.recurrence) payload.recurrence = bulkAction.recurrence;
+    if (
+      payload.status === undefined &&
+      payload.priority === undefined &&
+      payload.assignedTo === undefined &&
+      payload.recurrence === undefined
+    ) {
+      addToast('Choose at least one bulk field to update.', 'info');
+      return;
+    }
+    try {
+      await taskAPI.bulkUpdate(payload);
+      addToast(`Updated ${selectedTaskIds.length} task(s).`, 'success');
+      clearSelection();
+      await fetchTasks();
+    } catch (err) {
+      addToast(err.message || 'Failed to apply bulk action.', 'error');
+    }
+  };
+
+  const deleteSelectedTasks = async () => {
+    if (selectedTaskIds.length === 0) return;
+    if (!window.confirm(`Delete ${selectedTaskIds.length} selected task(s)?`)) {
+      return;
+    }
+    try {
+      await taskAPI.bulkUpdate({ taskIds: selectedTaskIds, delete: true });
+      addToast(`Deleted ${selectedTaskIds.length} task(s).`, 'success');
+      clearSelection();
+      await fetchTasks();
+    } catch (err) {
+      addToast(err.message || 'Failed to delete selected tasks.', 'error');
+    }
+  };
+
   const handleAddSubtask = async (taskId) => {
     const title = (newSubtaskText[taskId] || '').trim();
     if (!title) return;
@@ -243,6 +309,10 @@ const MyTasks = () => {
     () => [...tasks.todo, ...tasks.inProgress, ...tasks.completed],
     [tasks]
   );
+  useEffect(() => {
+    const visibleIds = new Set(allVisibleTasks.map((task) => task.id));
+    setSelectedTaskIds((prev) => prev.filter((id) => visibleIds.has(id)));
+  }, [allVisibleTasks]);
   const memberNameById = useMemo(
     () => Object.fromEntries(teamMembers.map((member) => [member.id, member.name || member.email || member.id])),
     [teamMembers]
@@ -250,6 +320,7 @@ const MyTasks = () => {
 
   const canEdit = hasRole('admin') || hasRole('manager') || user?.id;
   const canDelete = hasRole('admin') || hasRole('manager');
+  const allVisibleSelected = allVisibleTasks.length > 0 && allVisibleTasks.every((task) => selectedTaskIds.includes(task.id));
 
   if (loading) {
     return (
@@ -292,6 +363,13 @@ const MyTasks = () => {
         }}
       >
         <div className="task-header">
+          <label className="task-select" onClick={(e) => e.stopPropagation()}>
+            <input
+              type="checkbox"
+              checked={selectedTaskIds.includes(task.id)}
+              onChange={() => toggleTaskSelection(task.id)}
+            />
+          </label>
           <Icon className="task-icon" />
           {task.dueDate && <span className="task-date">{formatDate(task.dueDate)}</span>}
           <div className="task-actions">
@@ -439,6 +517,51 @@ const MyTasks = () => {
         </label>
         <button type="button" className="filter-btn" onClick={applyFilters}>Apply</button>
         <button type="button" className="filter-btn secondary" onClick={clearFilters}>Clear</button>
+      </div>
+
+      <div className={`bulk-toolbar ${selectedTaskIds.length > 0 ? 'visible' : ''}`}>
+        <div className="bulk-summary">
+          <label className="bulk-select-all">
+            <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} />
+            Select all visible
+          </label>
+          <span>{selectedTaskIds.length} selected</span>
+        </div>
+        <div className="bulk-controls">
+          <select value={bulkAction.status} onChange={(e) => setBulkAction((prev) => ({ ...prev, status: e.target.value }))}>
+            <option value="">Status</option>
+            <option value="todo">To Do</option>
+            <option value="inProgress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+          <select value={bulkAction.priority} onChange={(e) => setBulkAction((prev) => ({ ...prev, priority: e.target.value }))}>
+            <option value="">Priority</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+          <select value={bulkAction.assignedTo} onChange={(e) => setBulkAction((prev) => ({ ...prev, assignedTo: e.target.value }))}>
+            <option value="__keep__">Keep assignee</option>
+            <option value="">Unassigned</option>
+            {teamMembers.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name || member.email}
+              </option>
+            ))}
+          </select>
+          <select value={bulkAction.recurrence} onChange={(e) => setBulkAction((prev) => ({ ...prev, recurrence: e.target.value }))}>
+            <option value="">Recurrence</option>
+            <option value="none">No repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+          <button type="button" className="filter-btn" onClick={applyBulkAction}>Apply to Selected</button>
+          <button type="button" className="filter-btn secondary" onClick={clearSelection}>Clear</button>
+          {canDelete && (
+            <button type="button" className="filter-btn danger" onClick={deleteSelectedTasks}>Delete Selected</button>
+          )}
+        </div>
       </div>
 
       <div className="result-count">Showing {allVisibleTasks.length} tasks</div>

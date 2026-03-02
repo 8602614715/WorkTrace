@@ -18,6 +18,13 @@ const PRIORITY_OPTIONS = [
   { value: 'high', label: 'High' },
 ];
 
+const RECURRENCE_OPTIONS = [
+  { value: 'none', label: 'No repeat' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+];
+
 const TaskModal = ({
   isOpen,
   onClose,
@@ -37,6 +44,7 @@ const TaskModal = ({
     dueDate: '',
     assignedTo: '',
     progress: 0,
+    recurrence: 'none',
   });
   const [comments, setComments] = useState([]);
   const [activity, setActivity] = useState([]);
@@ -54,6 +62,7 @@ const TaskModal = ({
         dueDate: task.dueDate || '',
         assignedTo: task.assignedTo || '',
         progress: task.progress || 0,
+        recurrence: task.recurrence || 'none',
       });
     } else {
       setFormData({
@@ -64,6 +73,7 @@ const TaskModal = ({
         dueDate: '',
         assignedTo: '',
         progress: 0,
+        recurrence: 'none',
       });
     }
   }, [task, isOpen]);
@@ -313,6 +323,26 @@ const TaskModal = ({
                 <span />
               </div>
             )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="recurrence">Recurring</label>
+            <select
+              id="recurrence"
+              name="recurrence"
+              value={formData.recurrence}
+              onChange={handleChange}
+            >
+              {RECURRENCE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <div className="field-meta">
+              <span>When completed, next recurring task is generated automatically.</span>
+              <span />
+            </div>
           </div>
 
           {saveError && <div className="modal-error">{saveError}</div>}

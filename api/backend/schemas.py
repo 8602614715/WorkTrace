@@ -41,6 +41,7 @@ class TaskCreate(BaseModel):
     progress: int = 0
     icon: Optional[str] = "file"
     projectId: Optional[str] = None
+    recurrence: Optional[str] = None
 
 
 class TaskUpdate(BaseModel):
@@ -52,6 +53,7 @@ class TaskUpdate(BaseModel):
     assignedTo: Optional[str] = None
     progress: Optional[int] = None
     icon: Optional[str] = None
+    recurrence: Optional[str] = None
 
 
 class TaskStatusUpdate(BaseModel):
@@ -90,9 +92,20 @@ class TaskResponse(BaseModel):
     icon: Optional[str] = None
     projectId: Optional[str] = None
     sprintId: Optional[str] = None
+    recurrence: Optional[str] = None
     subtasks: list[SubTaskResponse] = Field(default_factory=list)
     createdAt: str
     updatedAt: str
+
+
+class TaskBulkUpdateRequest(BaseModel):
+    taskIds: list[str] = Field(min_length=1)
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    assignedTo: Optional[str] = None
+    sprintId: Optional[str] = None
+    recurrence: Optional[str] = None
+    delete: bool = False
 
 
 # ----- Projects -----

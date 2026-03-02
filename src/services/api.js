@@ -185,6 +185,12 @@ export const taskAPI = {
       body: JSON.stringify({ status }),
     });
   },
+  bulkUpdate: async (payload) => {
+    return apiRequest('/tasks/bulk', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
 
   getSubtasks: async (taskId) => {
     return apiRequest(`/tasks/${taskId}/subtasks`);

@@ -1,5 +1,5 @@
 """Tasks router - REST API for tasks per BACKEND_API spec."""
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
@@ -18,6 +18,7 @@ from schemas import (
     TaskCommentCreate,
     TaskCommentResponse,
     ActivityEventResponse,
+    TaskBulkUpdateRequest,
 )
 from dependencies import get_current_user, DbSession, CurrentUser
 
@@ -26,6 +27,96 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 VALID_STATUS = {"todo", "inProgress", "completed"}
 VALID_PRIORITY = {"low", "medium", "high"}
 VALID_ICONS = {"cpu", "grid", "file", "settings", "clock", "cart", "monitor", "users", "box"}
+VALID_RECURRENCE = {"none", "daily", "weekly", "monthly"}
+RECURRENCE_MARKER_PREFIX = "[WT_RECURRENCE="
+RECURRENCE_MARKER_SUFFIX = "]"
+
+
+def _extract_recurrence(description: str | None) -> tuple[str | None, str | None]:
+    """Extract recurrence marker from description and return (recurrence, clean_description)."""
+    if not description:
+        return None, description
+    marker_start = description.rfind(RECURRENCE_MARKER_PREFIX)
+    if marker_start == -1:
+        return None, description
+    marker_end = description.find(RECURRENCE_MARKER_SUFFIX, marker_start)
+    if marker_end == -1:
+        return None, description
+    marker_value = description[marker_start + len(RECURRENCE_MARKER_PREFIX):marker_end].strip().lower()
+    recurrence = marker_value if marker_value in VALID_RECURRENCE and marker_value != "none" else None
+    clean_description = description[:marker_start].rstrip() or None
+    return recurrence, clean_description
+
+
+def _attach_recurrence(description: str | None, recurrence: str | None) -> str | None:
+    clean_recurrence, clean_description = _extract_recurrence(description)
+    _ = clean_recurrence
+    normalized = (recurrence or "").strip().lower()
+    if normalized not in VALID_RECURRENCE:
+        normalized = "none"
+    if normalized == "none":
+        return clean_description
+    base = (clean_description or "").strip()
+    marker = f"{RECURRENCE_MARKER_PREFIX}{normalized}{RECURRENCE_MARKER_SUFFIX}"
+    if not base:
+        return marker
+    return f"{base}\n\n{marker}"
+
+
+def _next_due_date(current_due_date: str | None, recurrence: str | None) -> str | None:
+    recurrence = (recurrence or "").strip().lower()
+    if recurrence not in VALID_RECURRENCE or recurrence == "none":
+        return None
+    try:
+        base_date = datetime.strptime(current_due_date, "%Y-%m-%d").date() if current_due_date else datetime.utcnow().date()
+    except ValueError:
+        base_date = datetime.utcnow().date()
+    if recurrence == "daily":
+        next_date = base_date + timedelta(days=1)
+    elif recurrence == "weekly":
+        next_date = base_date + timedelta(days=7)
+    else:
+        # Month-safe increment without external dependency.
+        year = base_date.year + (1 if base_date.month == 12 else 0)
+        month = 1 if base_date.month == 12 else base_date.month + 1
+        day = min(base_date.day, 28)
+        next_date = base_date.replace(year=year, month=month, day=day)
+    return next_date.isoformat()
+
+
+def _spawn_next_recurring_task(
+    db: DbSession,
+    task: Task,
+    recurrence: str | None,
+    actor: CurrentUser,
+) -> Task | None:
+    recurrence = (recurrence or "").strip().lower()
+    if recurrence not in VALID_RECURRENCE or recurrence == "none":
+        return None
+    next_due = _next_due_date(task.due_date, recurrence)
+    next_task = Task(
+        title=task.title,
+        description=_attach_recurrence(task.description, recurrence),
+        status="todo",
+        priority=task.priority,
+        due_date=next_due,
+        assigned_to=task.assigned_to,
+        progress=0,
+        icon=task.icon or "file",
+        user_id=task.user_id,
+        project_id=task.project_id,
+        sprint_id=task.sprint_id,
+    )
+    db.add(next_task)
+    db.flush()
+    _log_activity(
+        db,
+        task_id=next_task.id,
+        actor_user_id=actor.id,
+        event_type="task_created_recurring",
+        detail=f"Recurring task generated from '{task.title}' ({recurrence}).",
+    )
+    return next_task
 
 
 def _subtask_to_response(subtask: SubTask) -> SubTaskResponse:
@@ -41,10 +132,11 @@ def _subtask_to_response(subtask: SubTask) -> SubTaskResponse:
 
 def _task_to_response(task: Task) -> TaskResponse:
     subtasks = sorted((task.subtasks or []), key=lambda s: (s.sort_order or 0, s.created_at))
+    recurrence, clean_description = _extract_recurrence(task.description)
     return TaskResponse(
         id=task.id,
         title=task.title,
-        description=task.description,
+        description=clean_description,
         status=task.status,
         priority=task.priority,
         dueDate=task.due_date,
@@ -54,6 +146,7 @@ def _task_to_response(task: Task) -> TaskResponse:
         icon=task.icon or "file",
         projectId=task.project_id,
         sprintId=task.sprint_id,
+        recurrence=recurrence,
         subtasks=[_subtask_to_response(s) for s in subtasks],
         createdAt=task.created_at.isoformat() if task.created_at else "",
         updatedAt=task.updated_at.isoformat() if task.updated_at else "",
@@ -191,6 +284,71 @@ async def get_tasks(
     return [_task_to_response(t) for t in tasks]
 
 
+@router.patch("/bulk", response_model=list[TaskResponse])
+async def bulk_update_tasks(
+    payload: TaskBulkUpdateRequest,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    task_ids = list(dict.fromkeys(payload.taskIds))
+    tasks = db.query(Task).filter(Task.id.in_(task_ids)).all()
+    if len(tasks) != len(task_ids):
+        raise HTTPException(status_code=400, detail="One or more taskIds are invalid")
+
+    updated_tasks: list[Task] = []
+    for task in tasks:
+        if not _can_access_task(current_user, task):
+            raise HTTPException(status_code=403, detail="Access denied to one or more tasks")
+        if payload.delete:
+            _log_activity(
+                db,
+                task_id=task.id,
+                actor_user_id=current_user.id,
+                event_type="task_deleted",
+                detail=f"Task deleted in bulk: {task.title}",
+            )
+            db.delete(task)
+            continue
+
+        old_status = task.status
+        if payload.status is not None:
+            if payload.status not in VALID_STATUS:
+                raise HTTPException(status_code=400, detail="Invalid status in bulk request")
+            task.status = payload.status
+        if payload.priority is not None:
+            if payload.priority not in VALID_PRIORITY:
+                raise HTTPException(status_code=400, detail="Invalid priority in bulk request")
+            task.priority = payload.priority
+        if payload.assignedTo is not None:
+            task.assigned_to = _normalize_assignee_id(db, payload.assignedTo)
+        if payload.sprintId is not None:
+            task.sprint_id = payload.sprintId or None
+        if payload.recurrence is not None:
+            task.description = _attach_recurrence(task.description, payload.recurrence)
+
+        if old_status != "completed" and task.status == "completed":
+            recurrence, _ = _extract_recurrence(task.description)
+            _spawn_next_recurring_task(
+                db=db,
+                task=task,
+                recurrence=recurrence,
+                actor=current_user,
+            )
+        _log_activity(
+            db,
+            task_id=task.id,
+            actor_user_id=current_user.id,
+            event_type="task_bulk_updated",
+            detail="Task updated through bulk action.",
+        )
+        updated_tasks.append(task)
+
+    db.commit()
+    for task in updated_tasks:
+        db.refresh(task)
+    return [_task_to_response(task) for task in updated_tasks]
+
+
 @router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(
     task_id: str,
@@ -215,10 +373,13 @@ async def create_task(
     priority_val = payload.priority if payload.priority in VALID_PRIORITY else "medium"
     icon_val = payload.icon if payload.icon in VALID_ICONS else "file"
 
+    recurrence_val = (payload.recurrence or "none").strip().lower()
+    if recurrence_val not in VALID_RECURRENCE:
+        recurrence_val = "none"
     assignee = _normalize_assignee_id(db, payload.assignedTo)
     task = Task(
         title=payload.title,
-        description=payload.description,
+        description=_attach_recurrence(payload.description, recurrence_val),
         status=status_val,
         priority=priority_val,
         due_date=payload.dueDate,
@@ -267,14 +428,21 @@ async def update_task(
     old_status = task.status
     old_assignee = task.assigned_to
     old_title = task.title
+    current_recurrence, _ = _extract_recurrence(task.description)
     update_data = payload.model_dump(exclude_unset=True)
+    next_recurrence = update_data.pop("recurrence", None)
     for key, value in update_data.items():
         if key == "dueDate":
             setattr(task, "due_date", value)
         elif key == "assignedTo":
             setattr(task, "assigned_to", _normalize_assignee_id(db, value))
+        elif key == "description":
+            target_recurrence = next_recurrence if next_recurrence is not None else current_recurrence
+            setattr(task, "description", _attach_recurrence(value, target_recurrence))
         else:
             setattr(task, key, value)
+    if "description" not in update_data and next_recurrence is not None:
+        setattr(task, "description", _attach_recurrence(task.description, next_recurrence))
 
     _log_activity(
         db,
@@ -291,6 +459,14 @@ async def update_task(
             message=f"{current_user.name} assigned task '{task.title}' to you.",
             entity_type="task",
             entity_id=task.id,
+        )
+    if old_status != "completed" and task.status == "completed":
+        recurrence, _ = _extract_recurrence(task.description)
+        _spawn_next_recurring_task(
+            db=db,
+            task=task,
+            recurrence=recurrence,
+            actor=current_user,
         )
 
     db.commit()
@@ -314,6 +490,7 @@ async def update_task_status(
         raise HTTPException(status_code=400, detail="Invalid status")
 
     old_status = task.status
+    recurrence, _ = _extract_recurrence(task.description)
     task.status = payload.status
     _log_activity(
         db,
@@ -332,6 +509,22 @@ async def update_task_status(
             entity_type="task",
             entity_id=task.id,
         )
+    if old_status != "completed" and payload.status == "completed":
+        next_task = _spawn_next_recurring_task(
+            db=db,
+            task=task,
+            recurrence=recurrence,
+            actor=current_user,
+        )
+        if next_task and next_task.assigned_to and next_task.assigned_to != current_user.id:
+            _notify_user(
+                db,
+                user_id=next_task.assigned_to,
+                title="Recurring task generated",
+                message=f"New recurring task '{next_task.title}' was generated.",
+                entity_type="task",
+                entity_id=next_task.id,
+            )
     db.commit()
     db.refresh(task)
     return _task_to_response(task)
