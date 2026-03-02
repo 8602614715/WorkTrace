@@ -9,6 +9,7 @@ import Reports from './Reports';
 import Sprints from './Sprints';
 import Settings from './Settings';
 import CalendarView from './CalendarView';
+import NotificationsCenter from './NotificationsCenter';
 import './MainContent.css';
 
 const MainContent = ({ activeView = 'dashboard' }) => {
@@ -68,6 +69,16 @@ const MainContent = ({ activeView = 'dashboard' }) => {
       <main className="main-content">
         <div className="content-page">
           <Sprints />
+        </div>
+      </main>
+    );
+  }
+
+  if (activeView === 'notifications') {
+    return (
+      <main className="main-content">
+        <div className="content-page">
+          <NotificationsCenter />
         </div>
       </main>
     );

@@ -209,6 +209,11 @@ const Header = ({ onNavigate, onToggleSidebar, isMobile = false }) => {
     }
   };
 
+  const handleOpenNotificationsView = () => {
+    setNotifOpen(false);
+    onNavigate && onNavigate('notifications');
+  };
+
   const userName = user?.name || user?.email || 'User';
   const avatarUrl = user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=667eea&color=fff&size=128`;
   const hasAnyResults = (
@@ -337,7 +342,10 @@ const Header = ({ onNavigate, onToggleSidebar, isMobile = false }) => {
               <div className="notif-dropdown" role="menu" aria-label="Notifications">
                 <div className="notif-header">
                   <span>Notifications</span>
-                  <button type="button" onClick={handleMarkAllRead}>Mark all read</button>
+                  <div className="notif-head-actions">
+                    <button type="button" onClick={handleOpenNotificationsView}>View all</button>
+                    <button type="button" onClick={handleMarkAllRead}>Mark all read</button>
+                  </div>
                 </div>
                 <div className="notif-list">
                   {notifLoading ? (

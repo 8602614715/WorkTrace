@@ -7,7 +7,8 @@ import {
   FiBarChart2,
   FiZap,
   FiSettings,
-  FiCalendar
+  FiCalendar,
+  FiBell
 } from 'react-icons/fi';
 import './Sidebar.css';
 
@@ -18,6 +19,7 @@ const menuItems = [
   { id: 'team', icon: FiUsers, label: 'Team' },
   { id: 'reports', icon: FiBarChart2, label: 'Reports' },
   { id: 'sprints', icon: FiZap, label: 'Sprints' },
+  { id: 'notifications', icon: FiBell, label: 'Notifications' },
   { id: 'settings', icon: FiSettings, label: 'Settings' },
 ];
 
