@@ -519,50 +519,52 @@ const MyTasks = () => {
         <button type="button" className="filter-btn secondary" onClick={clearFilters}>Clear</button>
       </div>
 
-      <div className={`bulk-toolbar ${selectedTaskIds.length > 0 ? 'visible' : ''}`}>
-        <div className="bulk-summary">
-          <label className="bulk-select-all">
-            <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} />
-            Select all visible
-          </label>
-          <span>{selectedTaskIds.length} selected</span>
+      {selectedTaskIds.length > 0 && (
+        <div className="bulk-toolbar">
+          <div className="bulk-summary">
+            <label className="bulk-select-all">
+              <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} />
+              Select all visible
+            </label>
+            <span>{selectedTaskIds.length} selected</span>
+          </div>
+          <div className="bulk-controls">
+            <select value={bulkAction.status} onChange={(e) => setBulkAction((prev) => ({ ...prev, status: e.target.value }))}>
+              <option value="">Status</option>
+              <option value="todo">To Do</option>
+              <option value="inProgress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+            <select value={bulkAction.priority} onChange={(e) => setBulkAction((prev) => ({ ...prev, priority: e.target.value }))}>
+              <option value="">Priority</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+            <select value={bulkAction.assignedTo} onChange={(e) => setBulkAction((prev) => ({ ...prev, assignedTo: e.target.value }))}>
+              <option value="__keep__">Keep assignee</option>
+              <option value="">Unassigned</option>
+              {teamMembers.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name || member.email}
+                </option>
+              ))}
+            </select>
+            <select value={bulkAction.recurrence} onChange={(e) => setBulkAction((prev) => ({ ...prev, recurrence: e.target.value }))}>
+              <option value="">Recurrence</option>
+              <option value="none">No repeat</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            <button type="button" className="filter-btn" onClick={applyBulkAction}>Apply to Selected</button>
+            <button type="button" className="filter-btn secondary" onClick={clearSelection}>Clear</button>
+            {canDelete && (
+              <button type="button" className="filter-btn danger" onClick={deleteSelectedTasks}>Delete Selected</button>
+            )}
+          </div>
         </div>
-        <div className="bulk-controls">
-          <select value={bulkAction.status} onChange={(e) => setBulkAction((prev) => ({ ...prev, status: e.target.value }))}>
-            <option value="">Status</option>
-            <option value="todo">To Do</option>
-            <option value="inProgress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
-          <select value={bulkAction.priority} onChange={(e) => setBulkAction((prev) => ({ ...prev, priority: e.target.value }))}>
-            <option value="">Priority</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-          <select value={bulkAction.assignedTo} onChange={(e) => setBulkAction((prev) => ({ ...prev, assignedTo: e.target.value }))}>
-            <option value="__keep__">Keep assignee</option>
-            <option value="">Unassigned</option>
-            {teamMembers.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name || member.email}
-              </option>
-            ))}
-          </select>
-          <select value={bulkAction.recurrence} onChange={(e) => setBulkAction((prev) => ({ ...prev, recurrence: e.target.value }))}>
-            <option value="">Recurrence</option>
-            <option value="none">No repeat</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
-          <button type="button" className="filter-btn" onClick={applyBulkAction}>Apply to Selected</button>
-          <button type="button" className="filter-btn secondary" onClick={clearSelection}>Clear</button>
-          {canDelete && (
-            <button type="button" className="filter-btn danger" onClick={deleteSelectedTasks}>Delete Selected</button>
-          )}
-        </div>
-      </div>
+      )}
 
       <div className="result-count">Showing {allVisibleTasks.length} tasks</div>
       {error && <div className="error-message">{error}</div>}
