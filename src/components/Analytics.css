@@ -330,7 +330,36 @@
 }
 
 @media (max-width: 768px) {
+  .analytics-card {
+    padding: 14px;
+  }
+
   .analytics-grid {
     grid-template-columns: 1fr;
+  }
+
+  .chart-container {
+    height: 120px;
+  }
+
+  .score-header {
+    margin-bottom: 12px;
+  }
+
+  .score-number {
+    font-size: 34px;
+  }
+
+  .score-divider {
+    font-size: 24px;
+  }
+
+  .score-total {
+    font-size: 20px;
+  }
+
+  .analytics-error {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

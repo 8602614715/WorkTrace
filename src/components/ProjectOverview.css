@@ -273,3 +273,26 @@
     transform: translateY(0);
   }
 }
+
+@media (max-width: 768px) {
+  .project-overview {
+    padding: 14px;
+  }
+
+  .progress-container {
+    min-height: 130px;
+  }
+
+  .progress-ring {
+    width: 120px;
+    height: 120px;
+  }
+
+  .progress-percentage {
+    font-size: 24px;
+  }
+
+  .mini-team-row {
+    padding: 7px 8px;
+  }
+}

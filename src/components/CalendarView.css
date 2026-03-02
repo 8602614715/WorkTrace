@@ -327,3 +327,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 520px) {
+  .calendar-controls {
+    gap: 4px;
+  }
+
+  .calendar-controls button {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .day-cell {
+    min-height: 72px;
+    padding: 4px;
+  }
+
+  .weekday-cell {
+    font-size: 9px;
+  }
+
+  .calendar-task {
+    font-size: 9px;
+    padding: 2px 3px;
+  }
+}

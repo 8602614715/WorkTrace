@@ -471,4 +471,32 @@
   .progress-task-count {
     display: none;
   }
+
+  .team-card-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .team-card-actions {
+    width: 100%;
+  }
+
+  .secondary-button,
+  .role-select {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .remove-button {
+    width: 100%;
+  }
+
+  .member-task-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .task-title {
+    white-space: normal;
+  }
 }

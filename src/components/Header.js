@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { FiSearch, FiBell, FiMoreVertical, FiSun, FiMoon, FiLogOut, FiUser } from 'react-icons/fi';
+import { FiSearch, FiBell, FiMoreVertical, FiSun, FiMoon, FiLogOut, FiUser, FiMenu } from 'react-icons/fi';
 import { taskAPI, projectAPI, teamAPI, notificationsAPI } from '../services/api';
 import './Header.css';
 
-const Header = ({ onNavigate }) => {
+const Header = ({ onNavigate, onToggleSidebar, isMobile = false }) => {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
@@ -218,6 +218,16 @@ const Header = ({ onNavigate }) => {
   return (
     <header className={`header ${theme}`}>
       <div className="header-left">
+        {isMobile && (
+          <button
+            type="button"
+            className="mobile-menu-button"
+            onClick={onToggleSidebar}
+            aria-label="Open navigation"
+          >
+            <FiMenu />
+          </button>
+        )}
         <div className="search-container" ref={searchRef}>
           <FiSearch className="search-icon" />
           <input

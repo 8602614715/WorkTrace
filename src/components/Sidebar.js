@@ -21,11 +21,30 @@ const menuItems = [
   { id: 'settings', icon: FiSettings, label: 'Settings' },
 ];
 
-const Sidebar = ({ activeView = 'dashboard', onNavigate }) => {
+const Sidebar = ({
+  activeView = 'dashboard',
+  onNavigate,
+  isMobile = false,
+  isMobileOpen = false,
+  onCloseMobile,
+}) => {
   const { theme } = useTheme();
+  const sidebarClass = [
+    'sidebar',
+    theme,
+    isMobile ? 'mobile-sidebar' : '',
+    isMobile && isMobileOpen ? 'open' : '',
+  ].join(' ').trim();
+
+  const handleNavigate = (viewId) => {
+    onNavigate && onNavigate(viewId);
+    if (isMobile) {
+      onCloseMobile && onCloseMobile();
+    }
+  };
 
   return (
-    <aside className={`sidebar ${theme}`}>
+    <aside className={sidebarClass} aria-hidden={isMobile ? !isMobileOpen : false}>
       <div className="sidebar-content">
         <div className="sidebar-logo">
           <h2>WorkTrace</h2>
@@ -38,10 +57,10 @@ const Sidebar = ({ activeView = 'dashboard', onNavigate }) => {
               <div
                 key={item.id}
                 className={`nav-item ${isActive ? 'active' : ''}`}
-                onClick={() => onNavigate && onNavigate(item.id)}
+                onClick={() => handleNavigate(item.id)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && onNavigate && onNavigate(item.id)}
+                onKeyDown={(e) => e.key === 'Enter' && handleNavigate(item.id)}
               >
                 <Icon className="nav-icon" />
                 <span className="nav-label">{item.label}</span>

@@ -16,9 +16,23 @@
   min-width: 0;
 }
 
-@media (max-width: 768px) {
+.mobile-sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 992px) {
   .dashboard-main {
     margin-left: 0;
-    padding-bottom: 110px;
+    padding-bottom: 24px;
+  }
+
+  .mobile-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    border: 0;
+    background: rgba(2, 6, 23, 0.42);
+    z-index: 1200;
+    padding: 0;
   }
 }
