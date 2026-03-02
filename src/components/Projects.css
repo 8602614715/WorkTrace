@@ -370,6 +370,11 @@
   color: #8b5cf6;
 }
 
+.status-paused {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
 .project-deadline {
   display: inline-flex;
   align-items: center;
@@ -382,6 +387,85 @@
 }
 
 .projects-page.light .project-deadline {
+  color: #475569;
+}
+
+.risk-badge {
+  font-size: 11px;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.risk-low {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.risk-medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.risk-high {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.project-health-row {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.health-label {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.projects-page.dark .health-label {
+  color: #cbd5e1;
+}
+
+.projects-page.light .health-label {
+  color: #334155;
+}
+
+.health-bar {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(148, 163, 184, 0.24);
+}
+
+.health-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.health-fill.risk-low {
+  background: linear-gradient(90deg, #22c55e, #10b981);
+}
+
+.health-fill.risk-medium {
+  background: linear-gradient(90deg, #f59e0b, #fb7185);
+}
+
+.health-fill.risk-high {
+  background: linear-gradient(90deg, #ef4444, #f97316);
+}
+
+.health-meta {
+  font-size: 11px;
+}
+
+.projects-page.dark .health-meta {
+  color: #94a3b8;
+}
+
+.projects-page.light .health-meta {
   color: #475569;
 }
 
@@ -691,6 +775,24 @@
 
   .progress-task-count {
     display: none;
+  }
+
+  .project-row-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .project-row-meta {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .project-health-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
   }
 
   .project-edit-grid {

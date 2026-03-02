@@ -21,6 +21,9 @@ const Sprints = () => {
   const [backlogTasks, setBacklogTasks] = useState([]);
   const [taskLoading, setTaskLoading] = useState(false);
   const [editingSprintId, setEditingSprintId] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [dragInfo, setDragInfo] = useState(null);
+  const [dropZone, setDropZone] = useState('');
   const [editFormData, setEditFormData] = useState({
     name: '',
     goal: '',
@@ -124,16 +127,19 @@ const Sprints = () => {
     setSelectedSprint(sprint);
     setTaskLoading(true);
     try {
-      const [sprintTaskData, backlogData] = await Promise.all([
+      const [sprintTaskData, backlogData, analyticsData] = await Promise.all([
         sprintsAPI.getTasks(sprint.id),
         sprintsAPI.getBacklog(sprint.project_id || undefined),
+        sprintsAPI.getAnalytics(sprint.id),
       ]);
       setSprintTasks(Array.isArray(sprintTaskData) ? sprintTaskData : []);
       setBacklogTasks(Array.isArray(backlogData) ? backlogData : []);
+      setAnalytics(analyticsData || null);
     } catch (err) {
       console.error('Failed to load sprint tasks', err);
       setSprintTasks([]);
       setBacklogTasks([]);
+      setAnalytics(null);
     } finally {
       setTaskLoading(false);
     }
@@ -159,6 +165,41 @@ const Sprints = () => {
     } catch (err) {
       console.error('Failed to remove task from sprint', err);
     }
+  };
+
+  const handleTaskDragStart = (taskId, source) => {
+    setDragInfo({ taskId, source });
+  };
+
+  const handleDrop = async (target) => {
+    if (!dragInfo) return;
+    if (dragInfo.source === target) {
+      setDragInfo(null);
+      setDropZone('');
+      return;
+    }
+    if (dragInfo.source === 'backlog' && target === 'sprint') {
+      await addTaskToSprint(dragInfo.taskId);
+    } else if (dragInfo.source === 'sprint' && target === 'backlog') {
+      await removeTaskFromSprint(dragInfo.taskId);
+    }
+    setDragInfo(null);
+    setDropZone('');
+  };
+
+  const renderMiniChart = (labels = [], values = [], className = '') => {
+    if (!labels.length || !values.length) return <div className="chart-empty">No data</div>;
+    const maxVal = Math.max(1, ...values);
+    return (
+      <div className={`mini-chart ${className}`}>
+        {values.map((value, idx) => (
+          <div key={`${labels[idx]}-${idx}`} className="mini-bar-wrap" title={`${labels[idx]}: ${value}`}>
+            <div className="mini-bar" style={{ height: `${(value / maxVal) * 100}%` }} />
+            <span>{labels[idx]}</span>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   const formatDate = (d) => {
@@ -343,20 +384,37 @@ const Sprints = () => {
 
       {selectedSprint && (
         <div className="sprint-tasks-panel">
-          <h3 className="panel-title">
-            Tasks for {selectedSprint.name}
-          </h3>
+          <div className="panel-head">
+            <h3 className="panel-title">Planning Board: {selectedSprint.name}</h3>
+            <p className="panel-subtitle">Drag tasks between Backlog and In Sprint to plan scope quickly.</p>
+          </div>
           {taskLoading ? (
             <div className="loading-state">Loading tasks...</div>
           ) : (
-            <div className="tasks-columns">
-              <div className="tasks-column">
+            <div className="planning-layout">
+              <div
+                className={`tasks-column drop-column ${dropZone === 'sprint' ? 'drop-active' : ''}`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDropZone('sprint');
+                }}
+                onDragLeave={() => setDropZone('')}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleDrop('sprint');
+                }}
+              >
                 <h4>In Sprint</h4>
                 {(sprintTasks || []).length === 0 ? (
                   <div className="empty-state">No tasks in this sprint</div>
                 ) : (
                   (sprintTasks || []).map((task) => (
-                    <div key={task.id} className="task-row">
+                    <div
+                      key={task.id}
+                      className="task-row"
+                      draggable
+                      onDragStart={() => handleTaskDragStart(task.id, 'sprint')}
+                    >
                       <span>{task.title}</span>
                       <button
                         type="button"
@@ -369,13 +427,29 @@ const Sprints = () => {
                   ))
                 )}
               </div>
-              <div className="tasks-column">
+              <div
+                className={`tasks-column drop-column ${dropZone === 'backlog' ? 'drop-active' : ''}`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDropZone('backlog');
+                }}
+                onDragLeave={() => setDropZone('')}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleDrop('backlog');
+                }}
+              >
                 <h4>Backlog</h4>
                 {(backlogTasks || []).length === 0 ? (
                   <div className="empty-state">No backlog tasks</div>
                 ) : (
                   (backlogTasks || []).map((task) => (
-                    <div key={task.id} className="task-row">
+                    <div
+                      key={task.id}
+                      className="task-row"
+                      draggable
+                      onDragStart={() => handleTaskDragStart(task.id, 'backlog')}
+                    >
                       <span>{task.title}</span>
                       <button
                         type="button"
@@ -386,6 +460,38 @@ const Sprints = () => {
                       </button>
                     </div>
                   ))
+                )}
+              </div>
+
+              <div className="analytics-column">
+                <h4>Sprint Analytics</h4>
+                {analytics ? (
+                  <div className="analytics-block">
+                    <div className="analytics-summary">
+                      <span>Total: {analytics.summary?.totalTasks ?? 0}</span>
+                      <span>Done: {analytics.summary?.completedTasks ?? 0}</span>
+                      <span>Remaining: {analytics.summary?.remainingTasks ?? 0}</span>
+                      <span>Avg/day: {analytics.summary?.avgCompletionPerDay ?? 0}</span>
+                    </div>
+                    <div className="mini-chart-card">
+                      <h5>Burndown (Remaining)</h5>
+                      {renderMiniChart(
+                        analytics.burndown?.labels || [],
+                        analytics.burndown?.actualRemaining || [],
+                        'burndown-chart'
+                      )}
+                    </div>
+                    <div className="mini-chart-card">
+                      <h5>Velocity (Done/day)</h5>
+                      {renderMiniChart(
+                        analytics.velocityTrend?.labels || [],
+                        analytics.velocityTrend?.data || [],
+                        'velocity-chart'
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="empty-state">No analytics available.</div>
                 )}
               </div>
             </div>

@@ -1,4 +1,5 @@
 """Projects router - REST API for projects."""
+from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import func, or_
 
@@ -142,6 +143,92 @@ async def get_project_overview(current_user: CurrentUser, db: DbSession):
         "inProgressTasks": len([t for t in tasks if t.status == "inProgress"]),
         "todoTasks": len([t for t in tasks if t.status == "todo"]),
     }
+
+
+@router.get("/health")
+async def get_project_health(current_user: CurrentUser, db: DbSession):
+    projects = (
+        db.query(Project)
+        .filter(
+            or_(
+                Project.owner_id == current_user.id,
+                Project.members.any(User.id == current_user.id),
+            )
+        )
+        .all()
+    )
+
+    today = datetime.utcnow().date()
+    items = []
+    for project in projects:
+        tasks = list(project.tasks or [])
+        total = len(tasks)
+        completed = len([t for t in tasks if t.status == "completed"])
+        completion_rate = (completed / total) if total > 0 else 0.0
+
+        overdue_open = 0
+        for task in tasks:
+            if not task.due_date or task.status == "completed":
+                continue
+            try:
+                if datetime.strptime(task.due_date, "%Y-%m-%d").date() < today:
+                    overdue_open += 1
+            except ValueError:
+                continue
+        overdue_ratio = (overdue_open / total) if total > 0 else 0.0
+
+        deadline_factor = 1.0
+        deadline_days_left = None
+        if project.deadline:
+            try:
+                deadline_date = datetime.strptime(project.deadline, "%Y-%m-%d").date()
+                deadline_days_left = (deadline_date - today).days
+                if completion_rate < 1.0:
+                    if deadline_days_left <= 0:
+                        deadline_factor = 0.0
+                    elif deadline_days_left <= 3:
+                        deadline_factor = 0.3
+                    elif deadline_days_left <= 7:
+                        deadline_factor = 0.6
+                    else:
+                        deadline_factor = 0.85
+            except ValueError:
+                deadline_factor = 0.75
+
+        health_score = round(
+            (completion_rate * 40)
+            + ((1 - overdue_ratio) * 35)
+            + (deadline_factor * 25),
+            2,
+        )
+        health_score = max(0.0, min(100.0, health_score))
+
+        if health_score >= 75:
+            risk_level = "low"
+            risk_label = "Healthy"
+        elif health_score >= 50:
+            risk_level = "medium"
+            risk_label = "Watch"
+        else:
+            risk_level = "high"
+            risk_label = "At Risk"
+
+        items.append(
+            {
+                "projectId": project.id,
+                "projectName": project.name,
+                "healthScore": health_score,
+                "riskLevel": risk_level,
+                "riskLabel": risk_label,
+                "completionRate": round(completion_rate * 100, 2),
+                "overdueOpenTasks": overdue_open,
+                "totalTasks": total,
+                "deadlineDaysLeft": deadline_days_left,
+            }
+        )
+
+    items.sort(key=lambda x: x["healthScore"], reverse=True)
+    return {"items": items}
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)

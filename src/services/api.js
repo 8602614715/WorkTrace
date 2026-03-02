@@ -259,6 +259,9 @@ export const projectAPI = {
   getOverview: async () => {
     return apiRequest('/projects/overview');
   },
+  getHealth: async () => {
+    return apiRequest('/projects/health');
+  },
 };
 
 // Team APIs
@@ -386,6 +389,9 @@ export const sprintsAPI = {
   },
   getTasks: async (id) => {
     return apiRequest(`/sprints/${id}/tasks`);
+  },
+  getAnalytics: async (id) => {
+    return apiRequest(`/sprints/${id}/analytics`);
   },
   getBacklog: async (projectId) => {
     const query = projectId ? `?project_id=${projectId}` : '';

@@ -332,10 +332,28 @@
   margin-bottom: 14px;
 }
 
-.tasks-columns {
+.panel-head {
+  margin-bottom: 12px;
+}
+
+.panel-subtitle {
+  font-size: 12px;
+  opacity: 0.78;
+}
+
+.sprints-page.dark .panel-subtitle {
+  color: #a0a0a0;
+}
+
+.sprints-page.light .panel-subtitle {
+  color: #5b6470;
+}
+
+.planning-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: minmax(230px, 1fr) minmax(230px, 1fr) minmax(260px, 1.2fr);
   gap: 16px;
+  align-items: start;
 }
 
 .tasks-column h4 {
@@ -364,6 +382,42 @@
   background-color: #ffffff;
 }
 
+.drop-column {
+  min-height: 220px;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px dashed transparent;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.sprints-page.dark .drop-column {
+  background: rgba(17, 24, 39, 0.32);
+}
+
+.sprints-page.light .drop-column {
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.drop-column.drop-active {
+  border-color: rgba(99, 102, 241, 0.65);
+}
+
+.sprints-page.dark .drop-column.drop-active {
+  background: rgba(99, 102, 241, 0.14);
+}
+
+.sprints-page.light .drop-column.drop-active {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.task-row[draggable="true"] {
+  cursor: grab;
+}
+
+.task-row[draggable="true"]:active {
+  cursor: grabbing;
+}
+
 .task-action {
   border: none;
   background: transparent;
@@ -379,6 +433,100 @@
 
 .task-action.remove {
   color: #ef4444;
+}
+
+.analytics-column {
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.sprints-page.dark .analytics-column {
+  border: 1px solid #2a2a2a;
+  background: rgba(9, 16, 27, 0.5);
+}
+
+.sprints-page.light .analytics-column {
+  border: 1px solid #e0e5ef;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.analytics-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.analytics-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.mini-chart-card {
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.mini-chart-card h5 {
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+
+.sprints-page.dark .mini-chart-card {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.sprints-page.light .mini-chart-card {
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.mini-chart {
+  height: 132px;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(18px, 1fr));
+  align-items: end;
+}
+
+.mini-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mini-bar {
+  width: 100%;
+  max-width: 18px;
+  min-height: 6px;
+  border-radius: 8px 8px 3px 3px;
+}
+
+.burndown-chart .mini-bar {
+  background: linear-gradient(180deg, #ef4444, #f97316);
+}
+
+.velocity-chart .mini-bar {
+  background: linear-gradient(180deg, #22c55e, #10b981);
+}
+
+.mini-bar-wrap span {
+  font-size: 10px;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  opacity: 0.72;
+}
+
+.chart-empty {
+  font-size: 12px;
+  opacity: 0.7;
 }
 
 .sprints-page.dark .empty-state,
@@ -437,7 +585,24 @@
     grid-template-columns: 1fr;
   }
 
-  .tasks-columns {
+  .planning-layout {
     grid-template-columns: 1fr;
+  }
+
+  .analytics-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .mini-chart {
+    height: 112px;
+    grid-template-columns: repeat(auto-fit, minmax(14px, 1fr));
+  }
+
+  .mini-bar {
+    max-width: 14px;
+  }
+
+  .mini-bar-wrap span {
+    font-size: 9px;
   }
 }

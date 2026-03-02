@@ -11,8 +11,10 @@ const Projects = () => {
   const { addToast } = useToast();
   const projectNameRef = useRef(null);
   const [projects, setProjects] = useState([]);
+  const [projectHealth, setProjectHealth] = useState({});
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [healthLoading, setHealthLoading] = useState(true);
   const [error, setError] = useState('');
   const [createError, setCreateError] = useState('');
   const [createStatus, setCreateStatus] = useState('');
@@ -59,6 +61,26 @@ const Projects = () => {
     }
   }, [addToast]);
 
+  const fetchProjectHealth = useCallback(async () => {
+    try {
+      setHealthLoading(true);
+      const data = await projectAPI.getHealth();
+      const items = Array.isArray(data?.items) ? data.items : [];
+      const mapped = {};
+      items.forEach((item) => {
+        if (item?.projectId) {
+          mapped[item.projectId] = item;
+        }
+      });
+      setProjectHealth(mapped);
+    } catch (err) {
+      setProjectHealth({});
+      console.error(err);
+    } finally {
+      setHealthLoading(false);
+    }
+  }, []);
+
   const fetchTeamMembers = useCallback(async () => {
     try {
       const data = await teamAPI.getMembers();
@@ -73,7 +95,8 @@ const Projects = () => {
   useEffect(() => {
     fetchProjects();
     fetchTeamMembers();
-  }, [fetchProjects, fetchTeamMembers]);
+    fetchProjectHealth();
+  }, [fetchProjects, fetchTeamMembers, fetchProjectHealth]);
 
   const handleCreateChange = (e) => {
     const { name, value } = e.target;
@@ -115,7 +138,7 @@ const Projects = () => {
       setCreateStatus('Project created successfully.');
       addToast('Project created successfully.', 'success');
       setCreateForm({ name: '', description: '', deadline: '', memberIds: [], memberEmailsText: '' });
-      fetchProjects();
+      await Promise.all([fetchProjects(), fetchProjectHealth()]);
     } catch (err) {
       setCreateError(err.message || 'Failed to create project.');
       addToast(err.message || 'Failed to create project.', 'error');
@@ -195,7 +218,7 @@ const Projects = () => {
         memberIds,
         memberEmails: memberEmails.length > 0 ? memberEmails : [],
       });
-      await fetchProjects();
+      await Promise.all([fetchProjects(), fetchProjectHealth()]);
       setEditingMembers((prev) => ({ ...prev, [projectId]: false }));
     } catch (err) {
       addToast('Failed to update project members.', 'error');
@@ -221,7 +244,7 @@ const Projects = () => {
         status: draft.status || 'active',
       });
       addToast('Project updated successfully.', 'success');
-      await fetchProjects();
+      await Promise.all([fetchProjects(), fetchProjectHealth()]);
       setEditingProjectDetails((prev) => ({ ...prev, [projectId]: false }));
     } catch (err) {
       addToast(err.message || 'Failed to update project.', 'error');
@@ -241,7 +264,7 @@ const Projects = () => {
     try {
       await projectAPI.delete(projectId);
       addToast('Project deleted successfully.', 'success');
-      await fetchProjects();
+      await Promise.all([fetchProjects(), fetchProjectHealth()]);
     } catch (err) {
       addToast(err.message || 'Failed to delete project.', 'error');
       console.error(err);
@@ -263,6 +286,10 @@ const Projects = () => {
       .slice(0, 2)
       .map((part) => part[0].toUpperCase())
       .join('');
+  };
+
+  const getProjectHealth = (projectId) => {
+    return projectHealth[projectId] || null;
   };
 
   if (loading) {
@@ -387,6 +414,10 @@ const Projects = () => {
             const lead = project.members?.[0];
             const leadAvatar = lead?.avatar ||
               `https://ui-avatars.com/api/?name=${encodeURIComponent(lead?.name || 'P')}&background=111827&color=fff&size=96`;
+            const health = getProjectHealth(project.id);
+            const healthScore = health?.healthScore ?? 0;
+            const riskLevel = health?.riskLevel || 'medium';
+            const riskLabel = health?.riskLabel || 'Watch';
 
             return (
               <div key={project.id} className="project-row-card">
@@ -401,7 +432,18 @@ const Projects = () => {
                   <div className="project-row-meta">
                     <span className={`project-status status-${project.status || 'active'}`}>{project.status || 'active'}</span>
                     <span className="project-deadline"><FiCalendar /> {formatDate(project.deadline)}</span>
+                    <span className={`risk-badge risk-${riskLevel}`}>{riskLabel}</span>
                   </div>
+                </div>
+
+                <div className="project-health-row">
+                  <span className="health-label">Health {healthLoading ? '...' : `${healthScore}%`}</span>
+                  <div className="health-bar">
+                    <div className={`health-fill risk-${riskLevel}`} style={{ width: `${healthScore}%` }} />
+                  </div>
+                  <span className="health-meta">
+                    {health ? `${health.overdueOpenTasks} overdue` : 'No data'}
+                  </span>
                 </div>
 
                 <div className="project-row-progress">
